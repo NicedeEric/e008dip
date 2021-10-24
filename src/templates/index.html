@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.0.min.js"
+    crossorigin="anonymous"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.0.min.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.0.min.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-2.4.0.min.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-mathjax-2.4.0.min.js"
+        crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        Bokeh.set_log_level("info");
+    </script>
+</head>
+<body>
+  <div id="map0"></div>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+    if(window.screen.width > 600){
+        var width = window.screen.width/2 - 40
+    }else{
+        var width = window.screen.width
+    }
+	var height = 700
+    async function fetch_plot(){
+		const response = await fetch('/api-rawMap-w='+width+'&h='+height);
+		var item = await response.json();
+        Bokeh.embed.embed_item(item, "map0");
+        console.log(item.doc.roots.references)
+        
+        // setInterval(()=>{
+        //     for (var i=0;i<references.length;i++) {
+        //         if (references[i].type==="ColumnDataSource") {
+        //             dataObj = references[i].attributes.data
+        //             console.log(dataObj);
+        //             dataObj.x.push(4);
+        //             dataObj.y.push(4);
+        //             dataObj.name.push("point4");
+        //             // item.doc.roots.attributes.change.emit();
+        //             break;
+        //         }
+        //     }
+        // }, 1000)
+	}
+    async function fetch_plot2(id){
+		const response = await fetch('/api-plot2-w='+width+'&h='+height);
+		var newItem = await response.json();
+		Bokeh.embed.embed_item(newItem, "map" + id);
+	}
+    fetch_plot();
+    // var i = 0
+    // setInterval(() => {
+    //     var element = document.getElementById("map" + i);
+    //     element.parentNode.removeChild(element);
+    //     i = i + 1
+    //     var newDiv = document.createElement('div');
+    //     newDiv.setAttribute("id", "map" + i);
+    //     document.body.appendChild(newDiv);
+    //     fetch_plot2(i); 
+    // }, 1000);
+
+    // var client = mqtt.connect('ws://192.168.0.156:1883', options=options);
+    // console.log(client);
+    
+    // function insertpoint(name, x, y) {
+    //     var ds = Bokeh.documents[0].get_model_by_name(name)
+    //     var len = ds.data.x.push(x)
+    //     ds.data.y.push(y)
+    //     if(len > 5){
+    //         ds.data.x.shift()
+    //         ds.data.y.shift()
+    //     }
+    //     ds.change.emit()
+    // }
+  </script>
+</body>

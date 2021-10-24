@@ -1,0 +1,1 @@
+from src.routes.map.renderMap import application
