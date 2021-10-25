@@ -26,10 +26,9 @@
     }
 	var height = 700
     async function fetch_plot(){
-		const response = await fetch('/api-rawMap-w='+width+'&h='+height);
+		const response = await fetch('/api-Map-w='+width+'&h='+height);
 		var item = await response.json();
         Bokeh.embed.embed_item(item, "map0");
-        console.log(item.doc.roots.references)
         // setInterval(()=>{
         //     for (var i=0;i<references.length;i++) {
         //         if (references[i].type==="ColumnDataSource") {
