@@ -6,7 +6,7 @@ def plotMap():
     ("(x,y)", "($x, $y)"),
     ("name", "@name"),
     ]
-    p = figure(tooltips=TOOLTIPS, width=648, height=700, tools="tap" ,title="E008 Indoor Positioning and Guiding system (CE2 lab)")
+    p = figure(width=648, height=700, tools="tap" ,title="E008 Indoor Positioning and Guiding system (CE2 lab)")
     tables = Tables.query.all()
     for table in tables:
         topLeft = table.topLeft.split(",")

@@ -26,10 +26,15 @@
     }
 	var height = 700;
     var i = 0;
-    async function fetch_plot(){
+    async function fetch_plot(count){
+        document.getElementById("map" + count).remove();
+        var elemDiv = document.createElement('div');
+        count = count + 1;
+        elemDiv.id = "map" + count;
+        document.body.appendChild(elemDiv);
 		const response = await fetch('/api-Map-w='+width+'&h='+height);
 		var item = await response.json();
-        Bokeh.embed.embed_item(item, "map0");
+        Bokeh.embed.embed_item(item, "map" + count);
 	}
     async function fetch_path(count, startPoint, endPoint){
         document.getElementById("map" + count).remove();
@@ -41,8 +46,8 @@
         var newItem = await response.json();
         Bokeh.embed.embed_item(newItem, "map" + i);
     }
-    fetch_plot();
-
+    fetch_plot(i);
+    i=i+1;
 
     // var client = mqtt.connect('ws://192.168.0.156:1883', options=options);
     // console.log(client);
