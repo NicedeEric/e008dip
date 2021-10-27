@@ -36,8 +36,28 @@
     }else{
         var width = window.screen.width
     }
-	var height = 700;
+	var height = 650;
     var i = 0;
+    var areaName;
+    function findTag(source, tagInfo) {
+        var x = source.data.x;
+        var y = source.data.y;
+        var name = source.data.name;
+        var user_x=tagInfo[0];
+        var user_y=tagInfo[1];
+        min_index=0;
+        min_dist=(user_x - x[0])*(user_x - x[0])+(user_y - y[0])*(user_y - y[0]);
+        cmp=0;
+        for (var k=0;k<x.length;k++) {
+            cmp = (user_x - x[k])*(user_x - x[k])+(user_y - y[k])*(user_y - y[k]);
+            if (cmp< min_dist) {
+                min_dist=cmp
+                min_index=k
+            }
+        };
+        console.log(min_index);
+        return name[min_index];
+    }
     function tagPosition(intialAnchor, scale, tagData) {
         // scale is cor/m meaning how many corrdinates will be one meter
         xMeter = tagData["x"];
@@ -66,29 +86,20 @@
     fetch_plot(i, width, height);
     i=i+1;
 
-    const intialAnchor = [0,0];
-    const tagData = {
-        "x": 1.53,
-        "y": 2.64,
-        "z": 0.12,
-        "quality": 50,
-    };
-    const scale =  3.48;
-    var tag = tagPosition(intialAnchor, scale, tagData);
-    console.log(tag);
-
-    // var client = mqtt.connect('ws://192.168.0.156:1883', options=options);
-    // console.log(client);
-    
-    // function insertpoint(name, x, y) {
-    //     var ds = Bokeh.documents[0].get_model_by_name(name)
-    //     var len = ds.data.x.push(x)
-    //     ds.data.y.push(y)
-    //     if(len > 5){
-    //         ds.data.x.shift()
-    //         ds.data.y.shift()
-    //     }
-    //     ds.change.emit()
-    // }
+    var intialAnchor = [0,0];
+    var tagData = {};
+    var tagInfo = {};
+    const scale =  15;
+    var client = mqtt.connect('ws://192.168.0.156:15675');
+    client.on("connect", function(topic, payload) {
+        console.log("connected");
+    })
+    // dwm/node/0125/uplink/location
+    client.subscribe("dwm/node/0125/uplink/location");
+    client.on("message", function (topic, message) {
+        tagJson = JSON.parse(message.toString()).position;
+        tagInfo = tagPosition(intialAnchor, scale, tagJson);
+        // console.log(tagInfo);
+    });
   </script>
 </body>

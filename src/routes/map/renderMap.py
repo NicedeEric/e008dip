@@ -51,13 +51,14 @@ def plotRawMap(width, height):
         source.data.alpha = array;
         source.change.emit();
         const dataLength = source.data.x.length;
-        var intervalId = setInterval(()=>{
-            const num = Math.random() * 80;
-            const num2 = Math.random() * 50;
-            source.data.x[dataLength - 1] = num;
-            source.data.y[dataLength -1] = num2;
-            source.change.emit();
+        setInterval(()=>{
+            if (tagInfo[0]) {
+                source.data.x[dataLength - 1] = tagInfo[0];
+                source.data.y[dataLength -1] = tagInfo[1];
+                source.change.emit();
+            }
         }, 500);
+        areaName = findTag(source, tagInfo);
     """)
     finishButtonCallback = CustomJS(args=dict(source=initialSource), code="""
         fetch_plot(i, width, height);
@@ -74,7 +75,7 @@ def plotRawMap(width, height):
     taptool.callback = CustomJS(args=dict(source=initialSource), code="""
         const indices = source.selected.indices;
         const data = source.data;
-        fetch_path(i ,"Area 1 Point 4", data.name[indices], width, height).then((result)=>{
+        fetch_path(i ,areaName, data.name[indices], width, height).then((result)=>{
             const pathLength = result.pathX.length;
             for (var j=0; j<pathLength;j++) {
                 data.pathX[j] = result.pathX[j];
