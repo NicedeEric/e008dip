@@ -19,36 +19,78 @@ def mapPage():
 
 @application.route('/api-Map-w=<int:width>&h=<int:height>')
 def plotRawMap(width, height):
-    plotObj = plotMap()
+    plotObj = plotMap(width, height)
     p = plotObj["p"]
     x = plotObj["x"]
     y = plotObj["y"]
     name = plotObj["name"]
-    initialSource = ColumnDataSource(data=dict(x=[0] * 49, y=[0] * 49, name=["None"] * 49, dataX=x, dataY=y, dataName=name))
+    length = len(x) + 1
+    path_x = ["None"] * length
+    path_y = ["None"] * length
+    initialSource = ColumnDataSource(data=dict(
+        x=[0] * length, 
+        y=[0] * length, 
+        color=["blue"] * (length-1) + ["red"], 
+        name=["None"] * length,
+        alpha = [0] * length,
+        dataX=x+ [0], 
+        dataY=y + [0], 
+        dataName=name + ["initialPoint"],
+        pathX = path_x,
+        pathY = path_y,
+        )
+        )
     div = Div(width=10, height=p.height, height_policy="fixed")
-    button = Button(label="Choose your destination", button_type="success")
-    buttonCallback = CustomJS(args=dict(source=initialSource), code="""
+    chooseButton = Button(label="Choose your destination", button_type="success")
+    finishButton = Button(label="Finish this tirp", button_type="success")
+    chooseButtonCallback = CustomJS(args=dict(source=initialSource), code="""
         source.data.x = source.data.dataX;
         source.data.y = source.data.dataY;
         source.data.name = source.data.dataName;
+        const array = new Array(source.data.x.length).fill(1);
+        source.data.alpha = array;
         source.change.emit();
+        const dataLength = source.data.x.length;
+        var intervalId = setInterval(()=>{
+            const num = Math.random() * 80;
+            const num2 = Math.random() * 50;
+            source.data.x[dataLength - 1] = num;
+            source.data.y[dataLength -1] = num2;
+            source.change.emit();
+        }, 500);
     """)
-    button.js_on_event(events.ButtonClick, buttonCallback)
-    layout = column(button, row(p, div))
-    p.circle('x', 'y', size=10, source=initialSource)
+    finishButtonCallback = CustomJS(args=dict(source=initialSource), code="""
+        fetch_plot(i, width, height);
+        i=i+1;
+    """)
+    chooseButton.js_on_event(events.ButtonClick, chooseButtonCallback)
+    finishButton.js_on_event(events.ButtonClick, finishButtonCallback)
+    layout = column(
+        chooseButton, finishButton, row(p, div),
+        )
+    p.circle('x', 'y', color="color", alpha="alpha", size=10, source=initialSource)
+    p.line(x="pathX", y="pathY", color="red", line_width=3, source=initialSource)
     taptool = p.select(type=TapTool)
     taptool.callback = CustomJS(args=dict(source=initialSource), code="""
         const indices = source.selected.indices;
         const data = source.data;
-        fetch_path(i ,"Area 1 Point 4", data.name[indices]);
-        i=i+1;
+        fetch_path(i ,"Area 1 Point 4", data.name[indices], width, height).then((result)=>{
+            const pathLength = result.pathX.length;
+            for (var j=0; j<pathLength;j++) {
+                data.pathX[j] = result.pathX[j];
+                data.pathY[j] = result.pathY[j];
+            }
+            data.alpha.fill(0, 0, data.alpha.length-1);
+            data.alpha[indices] = 1;
+            source.change.emit();
+        });
     """)
     return json.dumps(json_item(layout, 'myplot'))
 
 
-@application.route('/api-Path-s=<startPoint>&e=<endPoint>')
-def plotMapWithPath(startPoint, endPoint):
-    plotObj = plotMap()
+@application.route('/api-Path-s=<startPoint>&e=<endPoint>&w=<int:width>&h=<int:height>')
+def CalculatePath(startPoint, endPoint, width, height):
+    plotObj = plotMap(width, height)
     p = plotObj["p"]
     x = plotObj["x"]
     y = plotObj["y"]
@@ -71,15 +113,4 @@ def plotMapWithPath(startPoint, endPoint):
                 path_names.append(name[b])
 
     #Use the lists above to draw a line that visualizes the shortest path on the map
-
-    div = Div(width=10, height=p.height, height_policy="fixed")
-    button = Button(label="Finish this tirp", button_type="success")
-    layout = column(button, row(p, div))
-    source_path = ColumnDataSource(data=dict(x=path_x, y=path_y, name=path_names))
-    buttonCallback = CustomJS(args=dict(source=source_path), code="""
-        fetch_plot(i);
-        i=i+1;
-    """)
-    button.js_on_event(events.ButtonClick, buttonCallback)
-    p.line("x", "y", source=source_path, color="red")
-    return json.dumps(json_item(layout, 'myplot'))
+    return {"pathX": path_x, "pathY": path_y}

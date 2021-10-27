@@ -1,12 +1,12 @@
 from bokeh.plotting import figure
 from src.models import Tables, Nodes, Walls, Desks, Edges
-def plotMap(): 
+def plotMap(width, height): 
     TOOLTIPS = [
     ("index", "$index"),
     ("(x,y)", "($x, $y)"),
     ("name", "@name"),
     ]
-    p = figure(width=648, height=700, tools="tap" ,title="E008 Indoor Positioning and Guiding system (CE2 lab)")
+    p = figure(width=width, height=height, tools="tap" ,title="E008 Indoor Positioning and Guiding system (CE2 lab)")
     tables = Tables.query.all()
     for table in tables:
         topLeft = table.topLeft.split(",")

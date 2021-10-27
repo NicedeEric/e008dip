@@ -1,21 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.0.min.js"
-    crossorigin="anonymous"></script>
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.0.min.js"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.0.min.js"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-2.4.0.min.js"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-mathjax-2.4.0.min.js"
-        crossorigin="anonymous"></script>
+    <style>
+        .dot {
+        height: 10px;
+        width: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        }
+    </style>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.1.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-2.4.1.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.1.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.1.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-mathjax-2.4.1.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.4.1.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.4.1.min.js" crossorigin="anonymous"></script>
     <script type="text/javascript">
         Bokeh.set_log_level("info");
     </script>
 </head>
 <body>
+  
+  <div><span class="dot" style="background-color: blue;"></span> Destinations </div>
+  
+  <div><span class="dot" style="background-color: red;"></span> Your position </div>
+  <br>
+  <div>After select the destinations please press esc to start guiding!</div>
+  <br>
   <div id="map0"></div>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script>
@@ -26,7 +38,17 @@
     }
 	var height = 700;
     var i = 0;
-    async function fetch_plot(count){
+    function tagPosition(intialAnchor, scale, tagData) {
+        // scale is cor/m meaning how many corrdinates will be one meter
+        xMeter = tagData["x"];
+        yMeter = tagData["y"];
+        xCor = scale * xMeter;
+        yCor = scale * yMeter;
+        finalXCor = xCor + intialAnchor[0];
+        finalYCor = yCor + intialAnchor[1];
+        return [finalXCor, finalYCor];
+    }
+    async function fetch_plot(count, width, height){
         document.getElementById("map" + count).remove();
         var elemDiv = document.createElement('div');
         count = count + 1;
@@ -36,18 +58,24 @@
 		var item = await response.json();
         Bokeh.embed.embed_item(item, "map" + count);
 	}
-    async function fetch_path(count, startPoint, endPoint){
-        document.getElementById("map" + count).remove();
-        var elemDiv = document.createElement('div');
-        count = count + 1;
-        elemDiv.id = "map" + count;
-        document.body.appendChild(elemDiv);
-        const response = await fetch('/api-Path-s='+startPoint+'&e='+endPoint);
-        var newItem = await response.json();
-        Bokeh.embed.embed_item(newItem, "map" + i);
+    async function fetch_path(count, startPoint, endPoint, width, height){
+        const response = await fetch('/api-Path-s='+startPoint+'&e='+endPoint+'&w='+width+'&h='+height);
+        var data = await response.json();
+        return data;
     }
-    fetch_plot(i);
+    fetch_plot(i, width, height);
     i=i+1;
+
+    const intialAnchor = [0,0];
+    const tagData = {
+        "x": 1.53,
+        "y": 2.64,
+        "z": 0.12,
+        "quality": 50,
+    };
+    const scale =  3.48;
+    var tag = tagPosition(intialAnchor, scale, tagData);
+    console.log(tag);
 
     // var client = mqtt.connect('ws://192.168.0.156:1883', options=options);
     // console.log(client);
