@@ -51,17 +51,19 @@ def plotRawMap(width, height):
         source.data.alpha = array;
         source.change.emit();
         const dataLength = source.data.x.length;
-        setInterval(()=>{
+        tagInterval = setInterval(()=>{
             if (tagInfo[0]) {
                 source.data.x[dataLength - 1] = tagInfo[0];
                 source.data.y[dataLength -1] = tagInfo[1];
                 source.change.emit();
             }
+            console.log(tagInfo);
         }, 500);
-        areaName = findTag(source, tagInfo);
     """)
     finishButtonCallback = CustomJS(args=dict(source=initialSource), code="""
         fetch_plot(i, width, height);
+        clearInterval(pathInterval);
+        clearInterval(tagInterval);
         i=i+1;
     """)
     chooseButton.js_on_event(events.ButtonClick, chooseButtonCallback)
@@ -73,18 +75,35 @@ def plotRawMap(width, height):
     p.line(x="pathX", y="pathY", color="red", line_width=3, source=initialSource)
     taptool = p.select(type=TapTool)
     taptool.callback = CustomJS(args=dict(source=initialSource), code="""
-        const indices = source.selected.indices;
+        const indices = source.selected.indices[0];
         const data = source.data;
-        fetch_path(i ,areaName, data.name[indices], width, height).then((result)=>{
-            const pathLength = result.pathX.length;
-            for (var j=0; j<pathLength;j++) {
-                data.pathX[j] = result.pathX[j];
-                data.pathY[j] = result.pathY[j];
-            }
-            data.alpha.fill(0, 0, data.alpha.length-1);
-            data.alpha[indices] = 1;
-            source.change.emit();
-        });
+        function getRandomIntInclusive(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min; //含最大值，含最小值 
+        }
+        pathInterval = setInterval(()=>{
+            // areaName = findTag(source, tagInfo);
+            var num = getRandomIntInclusive(0,49);
+            while (num===indices) {
+                num = getRandomIntInclusive(0,49);
+            };
+            areaName = data.name[num];
+            fetch_path(i ,areaName, data.name[indices], width, height).then((result)=>{
+                const pathLength = result.pathX.length;
+                data.pathX = new Array(source.data.x.length).fill("None");
+                data.pathY = new Array(source.data.x.length).fill("None");
+                for (var j=0; j<pathLength;j++) {
+                    data.pathX[j] = result.pathX[j];
+                    data.pathY[j] = result.pathY[j];
+                }
+                data.alpha.fill(0, 0, data.alpha.length-1);
+                data.alpha[indices] = 1;
+                data.alpha[num] = 1;
+                source.change.emit();
+            });
+        }, 1000);
+
     """)
     return json.dumps(json_item(layout, 'myplot'))
 

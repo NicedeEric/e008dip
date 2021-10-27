@@ -39,6 +39,8 @@
 	var height = 650;
     var i = 0;
     var areaName;
+    var tagInterval;
+    var pathInterval;
     function findTag(source, tagInfo) {
         var x = source.data.x;
         var y = source.data.y;
@@ -88,7 +90,7 @@
 
     var intialAnchor = [0,0];
     var tagData = {};
-    var tagInfo = {};
+    var tagInfo = [];
     const scale =  15;
     var client = mqtt.connect('ws://192.168.0.156:15675');
     client.on("connect", function(topic, payload) {

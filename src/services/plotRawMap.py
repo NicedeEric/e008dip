@@ -1,5 +1,6 @@
 from bokeh.plotting import figure
-from src.models import Tables, Nodes, Walls, Desks, Edges
+from src.models import Tables, Nodes, Walls, Desks, Edges, Windows
+from bokeh.models import ColumnDataSource
 def plotMap(width, height): 
     TOOLTIPS = [
     ("index", "$index"),
@@ -60,6 +61,15 @@ def plotMap(width, height):
             alpha=[1],
             line_width=2,
         )
+
+    windows = Windows.query.all()
+    windowX=[]
+    windowY=[]
+    for window in windows:
+        windowX.append(window.x)
+        windowY.append(window.y)
+    source = ColumnDataSource(data=dict(x=windowX,y=windowY,))
+    p.circle("x", "y", color="white", source=source)
 
     edgesObj = Edges.query.all()
     edges=[]
