@@ -56,8 +56,8 @@ def plotRawMap(width, height):
                 source.data.x[dataLength - 1] = tagInfo[0];
                 source.data.y[dataLength -1] = tagInfo[1];
                 source.change.emit();
+                console.log(tagInfo);
             }
-            console.log(tagInfo);
         }, 500);
     """)
     finishButtonCallback = CustomJS(args=dict(source=initialSource), code="""
@@ -83,23 +83,19 @@ def plotRawMap(width, height):
             return Math.floor(Math.random() * (max - min + 1)) + min; //含最大值，含最小值 
         }
         pathInterval = setInterval(()=>{
-            // areaName = findTag(source, tagInfo);
-            var num = getRandomIntInclusive(0,49);
-            while (num===indices) {
-                num = getRandomIntInclusive(0,49);
-            };
-            areaName = data.name[num];
+            areaName = findTag(source, tagInfo);
             fetch_path(i ,areaName, data.name[indices], width, height).then((result)=>{
                 const pathLength = result.pathX.length;
                 data.pathX = new Array(source.data.x.length).fill("None");
                 data.pathY = new Array(source.data.x.length).fill("None");
-                for (var j=0; j<pathLength;j++) {
+                data.pathX[0] = tagInfo[0];
+                data.pathY[0] = tagInfo[1];
+                for (var j=1; j<pathLength+1;j++) {
                     data.pathX[j] = result.pathX[j];
                     data.pathY[j] = result.pathY[j];
                 }
                 data.alpha.fill(0, 0, data.alpha.length-1);
                 data.alpha[indices] = 1;
-                data.alpha[num] = 1;
                 source.change.emit();
             });
         }, 1000);

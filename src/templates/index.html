@@ -36,7 +36,7 @@
     }else{
         var width = window.screen.width
     }
-	var height = 650;
+	var height = parseInt(width * 1.544);
     var i = 0;
     var areaName;
     var tagInterval;
@@ -51,13 +51,14 @@
         min_dist=(user_x - x[0])*(user_x - x[0])+(user_y - y[0])*(user_y - y[0]);
         cmp=0;
         for (var k=0;k<x.length;k++) {
-            cmp = (user_x - x[k])*(user_x - x[k])+(user_y - y[k])*(user_y - y[k]);
-            if (cmp< min_dist) {
-                min_dist=cmp
-                min_index=k
+            if (source.data.name[k] !== "initialPoint") {
+                cmp = (user_x - x[k])*(user_x - x[k])+(user_y - y[k])*(user_y - y[k]);
+                if (cmp< min_dist) {
+                    min_dist=cmp
+                    min_index=k
+                }
             }
         };
-        console.log(min_index);
         return name[min_index];
     }
     function tagPosition(intialAnchor, scale, tagData) {
@@ -66,8 +67,8 @@
         yMeter = tagData["y"];
         xCor = scale * xMeter;
         yCor = scale * yMeter;
-        finalXCor = xCor + intialAnchor[0];
-        finalYCor = yCor + intialAnchor[1];
+        finalXCor = intialAnchor[0] - xCor;
+        finalYCor = intialAnchor[1] - yCor;
         return [finalXCor, finalYCor];
     }
     async function fetch_plot(count, width, height){
@@ -88,11 +89,12 @@
     fetch_plot(i, width, height);
     i=i+1;
 
-    var intialAnchor = [0,0];
+    var intialAnchor = [84,127];
     var tagData = {};
     var tagInfo = [];
-    const scale =  15;
-    var client = mqtt.connect('ws://192.168.0.156:15675');
+    const scale =  5.114;
+    var mqttBroker = "ws://172.20.10.14:15675"
+    var client = mqtt.connect(mqttBroker);
     client.on("connect", function(topic, payload) {
         console.log("connected");
     })
