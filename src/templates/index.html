@@ -93,7 +93,7 @@
     var tagData = {};
     var tagInfo = [];
     const scale =  5.114;
-    var mqttBroker = "ws://172.20.10.14:15675"
+    var mqttBroker = "ws://192.168.0.156:15675"
     var client = mqtt.connect(mqttBroker);
     client.on("connect", function(topic, payload) {
         console.log("connected");
